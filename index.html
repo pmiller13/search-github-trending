@@ -46,6 +46,11 @@
         border-radius: 4px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
+      .stats a {
+        text-align: center;
+        padding: 50px;
+        background-color: #eee;
+      }
       .result a {
         text-decoration: none;
         color: #6200ea;
@@ -59,6 +64,22 @@
         font-size: 16px;
         margin-bottom: 10px;
       }
+      .social-media {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .social-media a {
+        margin: 0 10px;
+        color: #6200ea;
+        text-decoration: none;
+        font-size: 20px;
+        transition: color 0.3s ease;
+      }
+      .social-media a:hover {
+        color: #3700b3;
+      }
     </style>
   </head>
   <body>
@@ -68,6 +89,22 @@
     <div id="searchInfo" style="margin-top: 20px"></div>
 
     <div id="results"></div>
+    <div class="social-media">
+      <a
+        href="https://www.linkedin.com/in/patrick-miller/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        LinkedIn
+      </a>
+      <a
+        href="https://github.com/pmiller13"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        GitHub
+      </a>
+    </div>
     <script>
       let lines = [];
       let invertedIndex = {};
