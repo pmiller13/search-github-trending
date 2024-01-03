@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trending GitHub Repo Archive</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 50px;
+        background-color: #eee;
+      }
+      #searchBox {
+        width: 300px;
+        height: 20px;
+        padding: 10px;
+        margin-bottom: 20px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      #searchButton {
+        padding: 10px 15px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #6200ea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        margin-left: 10px;
+      }
+      #searchButton:hover {
+        background-color: #3700b3;
+      }
+      #results {
+        text-align: left;
+        max-width: 800px;
+        margin: auto;
+        padding-top: 20px;
+      }
+      .result {
+        background-color: white;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .result a {
+        text-decoration: none;
+        color: #6200ea;
+        font-weight: bold;
+      }
+      .result a:hover {
+        text-decoration: underline;
+      }
+      #searchInfo {
+        color: #333;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Trending GitHub Repo Archive</h1>
+    <input type="text" id="searchBox" placeholder="Enter search text" />
+    <button id="searchButton">Search</button>
+    <div id="searchInfo" style="margin-top: 20px"></div>
+
+    <div id="results"></div>
+    <script>
+      let lines = [];
+      let invertedIndex = {};
+      function loadData() {
+        fetch("./data.json")
+          .then((response) => response.json())
+          .then((data) => {
+            lines = Object.values(data);
+            invertedIndex = buildInvertedIndex(lines);
+          });
+      }
+      function buildInvertedIndex(lines) {
+        const invertedIndex = Object.create(null);
+
+        lines.forEach((line, lineIndex) => {
+          const words = line[2].toLowerCase().match(/\w+/g);
+          if (!words) {
+            return;
+          }
+
+          words.forEach((word) => {
+            if (!invertedIndex[word]) {
+              invertedIndex[word] = new Set();
+            }
+            invertedIndex[word].add(lineIndex);
+          });
+        });
+
+        return invertedIndex;
+      }
+
+      invertedIndex = buildInvertedIndex(lines);
+
+      document
+        .getElementById("searchBox")
+        .addEventListener("keyup", function (event) {
+          if (event.key === "Enter") {
+            searchText(this.value);
+          }
+        });
+
+      document
+        .getElementById("searchButton")
+        .addEventListener("click", function () {
+          const query = document.getElementById("searchBox").value;
+          searchText(query);
+        });
+
+      function searchText(input) {
+        if (typeof input !== "string") return;
+        const startTime = performance.now();
+        const results = document.getElementById("results");
+        results.innerHTML = "";
+        const searchInfo = document.getElementById("searchInfo");
+        searchInfo.innerHTML = "";
+        const inputWords = input.toLowerCase().match(/\w+/g) || [];
+        if (inputWords.length === 0) return;
+
+        let resultIndices = new Set(invertedIndex[inputWords[0]] || []);
+
+        inputWords.slice(1).forEach((word) => {
+          if (invertedIndex[word]) {
+            resultIndices = new Set(
+              [...resultIndices].filter((index) =>
+                invertedIndex[word].has(index)
+              )
+            );
+          } else {
+            resultIndices = new Set();
+          }
+        });
+        resultIndices.forEach((index) => {
+          const repoData = lines[index];
+          // repoData[0]: repo name, repoData[1]: repo URL, repoData[2]: searchable text
+          // repoData[3]: original text, repoData[4]: latest date repo was trending
+          const elem = document.createElement("div");
+          elem.classList.add("result");
+
+          const link = document.createElement("a");
+          link.href = repoData[1];
+          link.textContent = `${repoData[0]}`;
+
+          const excerptText = document.createTextNode(repoData[3]);
+          link.style.marginRight = "8px";
+
+          elem.appendChild(link);
+          elem.appendChild(excerptText);
+          results.appendChild(elem);
+        });
+        const timeTaken = ((performance.now() - startTime) / 1000.0).toFixed(3);
+        searchInfo.innerHTML = `${resultIndices.size} results found in ${timeTaken} seconds`;
+      }
+
+      function clearResults() {
+        document.getElementById("results").innerHTML = "";
+      }
+
+      window.onload = loadData;
+    </script>
+  </body>
+</html>
