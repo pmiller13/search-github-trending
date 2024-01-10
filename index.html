@@ -120,7 +120,7 @@
         const invertedIndex = Object.create(null);
 
         lines.forEach((line, lineIndex) => {
-          const words = line[2].toLowerCase().match(/\w+/g);
+          const words = line.searchable.toLowerCase().match(/\w+/g);
           if (!words) {
             return;
           }
@@ -184,10 +184,10 @@
           elem.classList.add("result");
 
           const link = document.createElement("a");
-          link.href = repoData[1];
-          link.textContent = `${repoData[0]}`;
+          link.href = repoData.url;
+          link.textContent = `${repoData.title}`;
 
-          const excerptText = document.createTextNode(repoData[3]);
+          const excerptText = document.createTextNode(repoData.searchable);
           link.style.marginRight = "8px";
 
           elem.appendChild(link);
